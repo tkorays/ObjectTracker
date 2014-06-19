@@ -1,0 +1,13 @@
+#swap file
+*.~
+*.swp
+*.swap
+
+#others
+*.obj
+*.pdb
+*.so
+*.exe
+[Bb]in/
+
+
