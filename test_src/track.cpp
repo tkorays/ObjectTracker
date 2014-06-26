@@ -4,6 +4,7 @@
 #pragma comment(lib,cvLIB("legacy"))
 #pragma comment(lib,cvLIB("imgproc"))
 #pragma comment(lib,cvLIB("video"))
+#pragma comment(lib,cvLIB("features2d"))
 
 
 #include "../VideoProcessor.h"
@@ -13,7 +14,7 @@
 
 int main() {
 	VideoProcessor video;
-	video.setInput("E:/BigData/1.avi");
+	video.setInput("E:/BigData/2.avi");
 	video.setWinName("input", "output");
 	video.setDelay(40);
 	ObjectTracker tr;

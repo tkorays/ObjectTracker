@@ -21,7 +21,7 @@ using whu::ardrone::ARDroneTracker;
 int main(int argc, char* argv[]) {
 
 	VideoProcessor video;
-	video.setInput("E:/BigData/1.avi");
+	video.setInput("E:/BigData/2.avi");
 	video.setWinName("input", "output");
 	video.setDelay(40);
 	ARDroneTracker tr;
