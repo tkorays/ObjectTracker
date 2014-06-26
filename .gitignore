@@ -10,4 +10,8 @@
 *.exe
 [Bb]in/
 
+#vc project file
+proj/
+
+
 
