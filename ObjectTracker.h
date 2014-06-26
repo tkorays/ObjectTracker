@@ -3,11 +3,14 @@
 
 #pragma once
 
-#include "VideoProcessor.h"
+#include "ImgProcessor.h"
 #include "kvpair.h"
 #include <functional>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/video.hpp>
 
-class ObjectTracker :public FrameProcessor {
+class ObjectTracker :public ImgProcessor {
 	cv::Mat gray; // 当前灰度图片
 	cv::Mat gray_prev; // 之前的灰度图片
 	std::vector<cv::Point2f> points[2];
@@ -79,20 +82,20 @@ public:
 	}
 	void RmNoise(std::vector<cv::Point2f>& fp, double H, int N) {
 		double dst;
-		std::vector<std::vector<tk::kvpair<cv::Point2f, double>>> dst_tbl; // 距离矩阵
+		std::vector<std::vector<whu::kvpair<cv::Point2f, double>>> dst_tbl; // 距离矩阵
 		// 计算距离矩阵
 		for (size_t i = 0; i < fp.size(); i++) {
-			dst_tbl.push_back(std::vector<tk::kvpair<cv::Point2f, double>>());
+			dst_tbl.push_back(std::vector<whu::kvpair<cv::Point2f, double>>());
 			for (size_t j = 0; j < fp.size(); j++) {
 				dst = std::pow(fp[i].x - fp[j].x, 2.0) + std::pow(fp[i].y - fp[j].y, 2.0);
 				//std::cout << "dist" << dst << std::endl;
-				dst_tbl[i].push_back(tk::kvpair<cv::Point2f, double>(fp[j], dst));
+				dst_tbl[i].push_back(whu::kvpair<cv::Point2f, double>(fp[j], dst));
 			}
 		}
 
 		// 距离矩阵排序
 		for (size_t i = 0; i < dst_tbl.size(); i++) {
-			std::sort(dst_tbl[i].begin(), dst_tbl[i].end(), std::greater<tk::kvpair<cv::Point2f, double>>()); // 降序
+			std::sort(dst_tbl[i].begin(), dst_tbl[i].end(), std::greater<whu::kvpair<cv::Point2f, double>>()); // 降序
 			size_t k = dst_tbl[i].size();
 			for (size_t j = k - 1; k > 0; j--, k--) {
 				//std::cout<<"k:" << k << ",j:" << j << std::endl;
@@ -103,7 +106,7 @@ public:
 		}
 
 		// 于是每个点得到了近邻点,接下来去掉那些近邻点小于N个的点
-		std::vector<std::vector<tk::kvpair<cv::Point2f, double>>>::iterator it = dst_tbl.begin();
+		std::vector<std::vector<whu::kvpair<cv::Point2f, double>>>::iterator it = dst_tbl.begin();
 		std::vector<cv::Point2f>::iterator it_fp = fp.begin();
 		while (it != dst_tbl.end()) {
 			if ((*it).size()<N) {

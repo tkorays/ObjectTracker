@@ -3,7 +3,7 @@
 #pragma once
 
 // TODO: !!!!
-#include <cxxlib/common/ImgProcessor.h>
+#include "ImgProcessor.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
