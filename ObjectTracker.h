@@ -74,7 +74,7 @@ public:
 	}
 	void handleTrackedPoints(cv::Mat& frame, cv::Mat& output) {
 		cv::Point2f center = CenterPoint(points[1]);
-		cv::circle(output, center, 3, cv::Scalar(0, 255, 0), -1);
+		cv::circle(output, center, 10, cv::Scalar(0, 255, 0), -1);
 		//for (int i = 0; i < points[1].size(); i++) {
 		//cv::line(output, initial[i], points[1][i], cv::Scalar(255, 255, 255));
 		//cv::circle(output, points[1][i], 3, cv::Scalar(255, 255, 255), -1);
