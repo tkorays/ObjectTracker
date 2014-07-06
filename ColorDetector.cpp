@@ -3,6 +3,7 @@
 #include <map>
 #include <algorithm>
 #include <functional>
+#include "kvpair.h"
 using namespace cv;
 using namespace std;
 #include <time.h>
@@ -47,16 +48,17 @@ void ColorDetector::cluster(const std::vector<cv::Point>& pts, std::vector<cv::P
 	for (int i = 0; i < centers.size(); i++) {
 		pt_bag.push_back(vector<Point>());
 	}
-	multimap<double,int> dist;
+	//multimap<double,int> dist;
+	vector<whu::kvpair<int, double>> dist;
+
 	bool flag=false;
 	if (!flag) {
 		for (size_t pt_cnt = 0; pt_cnt < pts.size(); pt_cnt++) {
 			// 对这个点，就算到中心点距离
 			for (size_t center_cnt = 0; center_cnt < centers.size(); center_cnt++) {
-				pair<double, int> p(powf(centers[center_cnt].x - pts[pt_cnt].x, 2.0) + powf(centers[center_cnt].y - pts[pt_cnt].y, 2.0), center_cnt);
-				dist.insert(p);
-				std::sort(dist.begin(), dist.end(), less<pair<double, int>>()); // 距离排序
-				int index = (*dist.begin()).second;
+				dist.push_back(whu::kvpair<int,double>(center_cnt,powf(centers[center_cnt].x - pts[pt_cnt].x, 2.0) + powf(centers[center_cnt].y - pts[pt_cnt].y, 2.0)));
+				std::sort(dist.begin(), dist.end(), less<whu::kvpair<int, double>>()); // 距离排序
+				int index = dist[0].key;
 				pt_bag[center_cnt].push_back(pts[pt_cnt]); // 该点被加入第center_cnt的bag里面
 			}
 			dist.clear();
