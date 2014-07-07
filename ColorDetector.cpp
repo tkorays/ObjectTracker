@@ -14,30 +14,45 @@ vector<Point> ColorDetector::process(cv::Mat& img, int num, cv::Vec3i color, int
 	vector<Point> centers;
 	// 必须是三通道的
 	if (img.channels()!=3 || img.empty() || scan_step==0) {
+		perror("error!");
 		return centers;
 	}
 	vector<cv::Point> points;
 	const uchar* img_data = (uchar*)img.data;
 	for (int i = 0; i < img.rows*img.cols*3; i+=3) {
 		// 选择点，非全部扫描 
-		if (((i/3)%img.cols)%scan_step!=0 || ((i/3)%img.rows)%scan_step!=0) {
+		if (((i/3)/img.cols)%scan_step!=0 || ((i/3)%img.cols)%scan_step!=0) {
 			continue;
 		}
 		// 颜色在范围内
-		if (img_data[i]<(color[2]+color_dev) && img_data[i]>(color[2]-color_dev) &&\
-			img_data[i+1]<(color[1] + color_dev) && img_data[i+1]>(color[1] - color_dev)&&\
-			img_data[i + 2]<(color[0] + color_dev) && img_data[i + 2]>(color[0] - color_dev)
+		if (img_data[i]<(color[2] + color_dev) && img_data[i]>((color[2] - color_dev)<0 ? 0 : (color[2] - color_dev)) && \
+			img_data[i + 1]<(color[1] + color_dev) && img_data[i + 1]>((color[1] - color_dev)<0 ? 0 : (color[1] - color_dev)) && \
+			img_data[i + 2]<(color[0] + color_dev) && img_data[i + 2]>((color[0] - color_dev)<0 ? 0 : (color[0] - color_dev))
 			) {
-			points.push_back(cv::Point(i / img.cols, i%img.cols));
+			points.push_back(cv::Point((i/3)%img.cols, (i/3) / img.cols));
 		}
 	}
+	/*
+	printf("%d\n", points.size());
 	// 生成随机中心点
 	srand(time(NULL));
 	for (int i = 0; i < num; i++) {
-		centers.push_back(cv::Point(rand() % img.rows, rand() % img.cols));
+		centers.push_back(cv::Point(rand() % img.cols,rand() % img.rows));
+		printf("center[%d]:(%d,%d)\n", i, centers[i].x, centers[i].y);
 	}
 	// 聚类
 	cluster(points,centers);
+	*/
+	
+	centers.push_back(Point(0,0));
+	Point2d ct(0.0, 0.0);
+	for (size_t i = 0; i < points.size(); i++) {
+		ct.x += points[i].x / (double)points.size();
+		ct.y += points[i].y / (double)points.size();
+	}
+	centers[0].x = (int)ct.x;
+	centers[0].y = (int)ct.y;
+	
 	return centers;
 }
 
@@ -51,8 +66,8 @@ void ColorDetector::cluster(const std::vector<cv::Point>& pts, std::vector<cv::P
 	//multimap<double,int> dist;
 	vector<whu::kvpair<int, double>> dist;
 
-	bool flag=false;
-	if (!flag) {
+	int flag=0;
+	while(!flag) {
 		for (size_t pt_cnt = 0; pt_cnt < pts.size(); pt_cnt++) {
 			// 对这个点，就算到中心点距离
 			for (size_t center_cnt = 0; center_cnt < centers.size(); center_cnt++) {
@@ -64,24 +79,30 @@ void ColorDetector::cluster(const std::vector<cv::Point>& pts, std::vector<cv::P
 			dist.clear();
 		}
 		// update center points
+		flag = 1; // 假定每次都完成了,但是实际上最终都是false
 		for (size_t i = 0; i < centers.size(); i++) {
 			int x = 0, y = 0;
 			for (size_t j = 0; j < pt_bag[i].size(); j++) {
 				x += pt_bag[i][j].x;
 				y += pt_bag[i][j].y;
 			}
-			x /= pt_bag[i].size();
-			y /= pt_bag[i].size();
+			x = x/pt_bag[i].size();
+			y = y/pt_bag[i].size();
 			// check
-			if (abs(centers[i].x - x) <= 1 && abs(centers[i].y - y)<=1) {
-				flag = true;
-			} else {
-				flag = false;
+			printf("org center:(%d,%d)\n", centers[i].x, centers[i].y);
+			if (abs(centers[i].x - x) > 1 || abs(centers[i].y - y) > 1) {
+				flag = 0;
+				printf("00000000000000\n");
 			}
 			centers[i].x = x;
 			centers[i].y = y;
+			printf("center:(%d,%d)\n", x, y);
 		}
-		
+		printf("flag:%d\n", flag);
+		printf(":::::%d\n", centers.size());
+		for (size_t i = 0; i < pt_bag.size(); i++) {
+			pt_bag[i].clear();
+		}
 	}
 	
 	return;
